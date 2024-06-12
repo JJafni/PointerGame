@@ -18,10 +18,16 @@ export default class Demo extends Phaser.Scene {
   create() {
     this.logo = this.add.image(200, 300, 'logo');
     this.logo.setScale(0.2);
+
+    // Adjust the hitbox size
+    this.logo.setSize(this.logo.displayWidth * 1, this.logo.displayHeight * 1);
+    this.logo.setOrigin(0.5, 0.5); // Make sure the hitbox is centered on the sprite
+
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.createObstacles();
-  }
+}
+
 
   createObstacles() {
     for (let i = 0; i < 5; i++) {
