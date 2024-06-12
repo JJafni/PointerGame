@@ -16,12 +16,14 @@ export default class Demo extends Phaser.Scene {
     this.logo = this.add.image(400, 300, 'logo'); // Adjust initial position as needed
     this.logo.setScale(0.5); // Adjust the scale as needed
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
   }
 
   update() {
-    if (this.cursors.up.isDown && this.logo.y > this.ceilingY) {
+    if (this.spacebar.isDown && this.logo.y > this.ceilingY) {
       this.logo.y -= this.speed;
-    } else if (this.cursors.down.isDown && this.logo.y < this.floorY) {
+    }  else if (this.logo.y < this.floorY) {
       this.logo.y += this.speed;
     }
   }
