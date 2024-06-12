@@ -1,0 +1,3 @@
+[submodule "phaser3-rollup-typescript"]
+	path = phaser3-rollup-typescript
+	url = https://github.com/geocine/phaser3-rollup-typescript.git
