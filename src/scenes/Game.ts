@@ -42,6 +42,9 @@ export default class Demo extends Phaser.Scene {
       let x = Phaser.Math.Between(800, 1000);
       let y = Phaser.Math.Between(this.ceilingY, this.floorY);
       let obstacle = this.add.image(x, y, 'obstacle');
+
+      obstacle.setScale(0.1); // Adjust the scale value as needed
+
       obstacle.passed = false; // Custom property to check if passed
       this.obstacles.push(obstacle);
     }
