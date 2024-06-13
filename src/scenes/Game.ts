@@ -8,6 +8,7 @@ export default class Demo extends Phaser.Scene {
     this.ceilingY = 50; 
     this.floorY = 500;
     this.obstacles = [];
+    this.score = 0; // Initialize score
   }
 
   preload() {
@@ -18,26 +19,24 @@ export default class Demo extends Phaser.Scene {
   create() {
     this.logo = this.add.image(200, 300, 'logo');
     this.logo.setScale(0.03);
-
-
-    // Rotate the logo by 90 degrees to make it horizontal
     this.logo.angle = 140;
-
-    // Adjust the hitbox size
     this.logo.setSize(this.logo.displayWidth * 0.8, this.logo.displayHeight * 0.8);
-    this.logo.setOrigin(0.5, 0.5); // Make sure the hitbox is centered on the sprite
+    this.logo.setOrigin(0.5, 0.5);
 
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.createObstacles();
-}
 
+    // Create score text
+    this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+  }
 
   createObstacles() {
     for (let i = 0; i < 5; i++) {
-      let x = Phaser.Math.Between(800, 1000); // Start off-screen to the right
+      let x = Phaser.Math.Between(800, 1000);
       let y = Phaser.Math.Between(this.ceilingY, this.floorY);
       let obstacle = this.add.image(x, y, 'obstacle');
+      obstacle.passed = false; // Custom property to check if passed
       this.obstacles.push(obstacle);
     }
   }
@@ -49,14 +48,18 @@ export default class Demo extends Phaser.Scene {
     } else if (this.logo.y < this.floorY) {
       this.logo.y += this.speed;
       this.logo.angle = 130;
-
     }
 
     this.obstacles.forEach(obstacle => {
-      obstacle.x -= this.obstacleSpeed; // Move each obstacle to the left
-      if (obstacle.x < -50) { // Reset obstacle position if it moves off-screen
+      obstacle.x -= this.obstacleSpeed;
+      if (obstacle.x < -50) {
         obstacle.x = Phaser.Math.Between(800, 1000);
         obstacle.y = Phaser.Math.Between(this.ceilingY, this.floorY);
+        obstacle.passed = false; // Reset passed status
+      } else if (!obstacle.passed && obstacle.x < this.logo.x) {
+        obstacle.passed = true;
+        this.score++; // Increment score
+        this.scoreText.setText('Score: ' + this.score); // Update score text
       }
     });
 
@@ -72,22 +75,16 @@ export default class Demo extends Phaser.Scene {
   }
 
   gameOver() {
-    // Handle game over logic, e.g., stop the game, display a message, etc.
     this.scene.pause();
-    
-    // Create a text object to display 'Game Over'
     const gameOverText = this.add.text(
-        this.cameras.main.centerX, // X position (center of the screen)
-        this.cameras.main.centerY, // Y position (center of the screen)
-        'Game Over!', // Text to display
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        'Game Over!',
         {
-            fontSize: '64px', // Font size
-            color: '#ff0000'  // Font color
+            fontSize: '64px',
+            color: '#ff0000'
         }
     );
-    
-    // Center the text object
     gameOverText.setOrigin(0.5, 0.5);
-}
-
+  }
 }
