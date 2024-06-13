@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 export default class Demo extends Phaser.Scene {
   constructor() {
     super('GameScene');
-    this.speed = 10;
+    this.speed = 5;
     this.obstacleSpeed = 3;
     this.ceilingY = 50; 
     this.floorY = 500;
@@ -21,7 +21,7 @@ export default class Demo extends Phaser.Scene {
 
 
     // Rotate the logo by 90 degrees to make it horizontal
-    this.logo.angle = 90;
+    this.logo.angle = 140;
 
     // Adjust the hitbox size
     this.logo.setSize(this.logo.displayWidth * 0.8, this.logo.displayHeight * 0.8);
@@ -45,8 +45,11 @@ export default class Demo extends Phaser.Scene {
   update() {
     if (this.spacebar.isDown && this.logo.y > this.ceilingY) {
       this.logo.y -= this.speed;
+      this.logo.angle = 50;
     } else if (this.logo.y < this.floorY) {
       this.logo.y += this.speed;
+      this.logo.angle = 130;
+
     }
 
     this.obstacles.forEach(obstacle => {
