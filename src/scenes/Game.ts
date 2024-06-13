@@ -9,6 +9,7 @@ export default class Demo extends Phaser.Scene {
     this.floorY = 500;
     this.obstacles = [];
     this.score = 0; // Initialize score
+    this.speedIncrement = 0.1; // Speed increment for each score
   }
 
   preload() {
@@ -59,6 +60,7 @@ export default class Demo extends Phaser.Scene {
       } else if (!obstacle.passed && obstacle.x < this.logo.x) {
         obstacle.passed = true;
         this.score++; // Increment score
+        this.obstacleSpeed += this.speedIncrement; // Increase obstacle speed
         this.scoreText.setText('Score: ' + this.score); // Update score text
       }
     });
