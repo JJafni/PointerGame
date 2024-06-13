@@ -84,7 +84,7 @@ export default class Demo extends Phaser.Scene {
     });
   }
 
-  gameOver() {
+ gameOver() {
     this.scene.pause();
     const gameOverText = this.add.text(
         this.cameras.main.centerX,
@@ -99,5 +99,25 @@ export default class Demo extends Phaser.Scene {
 
     // Stop background music
     this.backgroundMusic.stop();
-  }
+
+    // Create a restart button
+    const restartButton = this.add.text(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY + 70, // Position below the game over text
+        'Restart',
+        {
+            fontSize: '32px',
+            color: '#00ff00',
+            backgroundColor: '#000000',
+            padding: { left: 10, right: 10, top: 5, bottom: 5 }
+        }
+    );
+    restartButton.setOrigin(0.5, 0.5);
+    restartButton.setInteractive({ useHandCursor: true }); // Makes the text clickable and changes the cursor to a pointer
+
+    // Add click event to restart the game
+    restartButton.on('pointerdown', () => {
+        this.scene.restart(); // This restarts the current scene
+    });
+}
 }
