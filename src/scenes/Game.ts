@@ -13,14 +13,14 @@ export default class Demo extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('logo', 'assets/arrow.png');
+    this.load.image('logo', 'assets/plane.png');
     this.load.image('obstacle', 'assets/obstacle.png');
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
   }
 
   create() {
     this.logo = this.add.image(200, 300, 'logo');
-    this.logo.setScale(0.03);
+    this.logo.setScale(0.07);
     this.logo.angle = 140;
     this.logo.setSize(this.logo.displayWidth * 0.8, this.logo.displayHeight * 0.8);
     this.logo.setOrigin(0.5, 0.5);
