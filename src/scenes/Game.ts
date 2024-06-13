@@ -15,6 +15,7 @@ export default class Demo extends Phaser.Scene {
   preload() {
     this.load.image('logo', 'assets/arrow.png');
     this.load.image('obstacle', 'assets/obstacle.png');
+    this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
   }
 
   create() {
@@ -30,6 +31,10 @@ export default class Demo extends Phaser.Scene {
 
     // Create score text
     this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+
+    // Add background music
+    this.backgroundMusic = this.sound.add('backgroundMusic');
+    this.backgroundMusic.play({ loop: true, volume: 0.3 }); // Play background music with looping and set volume
   }
 
   createObstacles() {
@@ -88,5 +93,8 @@ export default class Demo extends Phaser.Scene {
         }
     );
     gameOverText.setOrigin(0.5, 0.5);
+
+    // Stop background music
+    this.backgroundMusic.stop();
   }
 }
