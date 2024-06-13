@@ -11,16 +11,20 @@ export default class Demo extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('logo', 'assets/plane.png');
+    this.load.image('logo', 'assets/arrow.png');
     this.load.image('obstacle', 'assets/obstacle.png');
   }
 
   create() {
     this.logo = this.add.image(200, 300, 'logo');
-    this.logo.setScale(0.2);
+    this.logo.setScale(0.03);
+
+
+    // Rotate the logo by 90 degrees to make it horizontal
+    this.logo.angle = 90;
 
     // Adjust the hitbox size
-    this.logo.setSize(this.logo.displayWidth * 1, this.logo.displayHeight * 1);
+    this.logo.setSize(this.logo.displayWidth * 0.8, this.logo.displayHeight * 0.8);
     this.logo.setOrigin(0.5, 0.5); // Make sure the hitbox is centered on the sprite
 
     this.cursors = this.input.keyboard.createCursorKeys();
