@@ -1,6 +1,13 @@
 import Phaser from 'phaser';
 
 export default class Demo extends Phaser.Scene {
+  speed: number;
+  obstacleSpeed: number;
+  ceilingY: number;
+  floorY: number;
+  obstacles: Phaser.GameObjects.Image[];
+  speedIncrement: number;
+  score: number;
   constructor() {
     super('GameScene');
     this.speed = 5;
@@ -16,26 +23,35 @@ export default class Demo extends Phaser.Scene {
     this.load.image('logo', 'assets/plane.png');
     this.load.image('obstacle', 'assets/obstacle.png');
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
+    this.load.image('background', 'assets/background.jpg');
   }
-
-  create() {
-    this.logo = this.add.image(200, 300, 'logo');
-    this.logo.setScale(0.07);
-    this.logo.angle = 140;
-    this.logo.setSize(this.logo.displayWidth * 0.8, this.logo.displayHeight * 0.8);
-    this.logo.setOrigin(0.5, 0.5);
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.createObstacles();
-
-    // Create score text
-    this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
-
-    // Add background music
-    this.backgroundMusic = this.sound.add('backgroundMusic');
-    this.backgroundMusic.play({ loop: true, volume: 0.3 }); // Play background music with looping and set volume
+    create() {
+      // Add background image first
+      this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background')
+          .setOrigin(0.5, 0.5)
+          .setDisplaySize(window.innerWidth, window.innerHeight);
+  
+      // Add logo image after background
+      this.logo = this.add.image(200, 300, 'logo');
+      this.logo.setScale(0.07);
+      this.logo.setSize(this.logo.displayWidth * 0.1, this.logo.displayHeight * 0.1);
+      this.logo.setOrigin(0.01, 0.01);
+  
+      // Initialize input keys
+      this.cursors = this.input.keyboard.createCursorKeys();
+      this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+  
+      // Create obstacles
+      this.createObstacles();
+  
+      // Create score text
+      this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+  
+      // Add background music
+      this.backgroundMusic = this.sound.add('backgroundMusic');
+      this.backgroundMusic.play({ loop: true, volume: 0.1 }); // Play background music with looping and set volume
   }
+  
 
   createObstacles() {
     for (let i = 0; i < 5; i++) {
@@ -52,12 +68,13 @@ export default class Demo extends Phaser.Scene {
 
   update() {
     if (this.spacebar.isDown && this.logo.y > this.ceilingY) {
-      this.logo.y -= this.speed;
-      this.logo.angle = 50;
+        this.logo.y -= this.speed;
+        this.logo.angle = 0;  // Points to the right
     } else if (this.logo.y < this.floorY) {
-      this.logo.y += this.speed;
-      this.logo.angle = 130;
+        this.logo.y += this.speed;
+        this.logo.angle = 0;  // Points to the right and a bit downwards
     }
+
 
     this.obstacles.forEach(obstacle => {
       obstacle.x -= this.obstacleSpeed;
