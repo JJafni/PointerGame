@@ -25,32 +25,32 @@ export default class Demo extends Phaser.Scene {
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
   }
-    create() {
-      // Add background image first
-      this.add.image(window.innerWidth / 2, window.innerHeight / 2, 'background')
-          .setOrigin(0.5, 0.5)
-          .setDisplaySize(window.innerWidth, window.innerHeight);
-  
-      // Add logo image after background
-      this.logo = this.add.image(200, 300, 'logo');
-      this.logo.setScale(0.07);
-      this.logo.setSize(this.logo.displayWidth * 0.1, this.logo.displayHeight * 0.1);
-      this.logo.setOrigin(0.01, 0.01);
-  
-      // Initialize input keys
-      this.cursors = this.input.keyboard.createCursorKeys();
-      this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-  
-      // Create obstacles
-      this.createObstacles();
-  
-      // Create score text
-      this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
-  
-      // Add background music
-      this.backgroundMusic = this.sound.add('backgroundMusic');
-      this.backgroundMusic.play({ loop: true, volume: 0.1 }); // Play background music with looping and set volume
-  }
+  create() {
+    // Add tile sprite for background
+    this.background = this.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'background')
+        .setOrigin(0, 0)
+        .setDisplaySize(window.innerWidth, window.innerHeight);
+
+    // Add logo image
+    this.logo = this.add.image(200, 300, 'logo');
+    this.logo.setScale(0.07);
+    this.logo.setSize(this.logo.displayWidth * 0.1, this.logo.displayHeight * 0.1);
+    this.logo.setOrigin(0.01, 0.01);
+
+    // Initialize input keys
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+    // Create obstacles
+    this.createObstacles();
+
+    // Create score text
+    this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+
+    // Add background music
+    this.backgroundMusic = this.sound.add('backgroundMusic');
+    this.backgroundMusic.play({ loop: true, volume: 0.1 }); // Play background music with looping and set volume
+}
   
 
   createObstacles() {
@@ -74,6 +74,7 @@ export default class Demo extends Phaser.Scene {
         this.logo.y += this.speed;
         this.logo.angle = 0;  // Points to the right and a bit downwards
     }
+    this.background.tilePositionX += 2; // Adjust this value to control the speed
 
 
     this.obstacles.forEach(obstacle => {
