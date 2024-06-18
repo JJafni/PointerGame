@@ -10,6 +10,8 @@ export default class Demo extends Phaser.Scene {
   score: number;
   logo: Phaser.GameObjects.Image;
   debugGraphics: Phaser.GameObjects.Graphics;
+  hitboxRadius: number;
+  hitboxOffsetX: number;
   constructor() {
     super('GameScene');
     this.speed = 5;
@@ -19,6 +21,8 @@ export default class Demo extends Phaser.Scene {
     this.obstacles = [];
     this.score = 0; // Initialize score
     this.speedIncrement = 0.1; // Speed increment for each score
+    this.hitboxRadius = 20; // Adjust hitbox radius
+    this.hitboxOffsetX = 30; // Adjust hitbox horizontal offset
   }
 
   preload() {
@@ -119,8 +123,8 @@ export default class Demo extends Phaser.Scene {
   checkCollisions() {
     this.obstacles.forEach(obstacle => {
       if (
-        Phaser.Geom.Intersects.RectangleToRectangle(
-          this.logo.getBounds(),
+        Phaser.Geom.Intersects.CircleToRectangle(
+          new Phaser.Geom.Circle(this.logo.x + this.hitboxOffsetX, this.logo.y, this.hitboxRadius),
           obstacle.getBounds()
         )
       ) {
@@ -135,7 +139,7 @@ export default class Demo extends Phaser.Scene {
 
     // Draw hitbox
     this.debugGraphics.lineStyle(2, 0xff0000);
-    this.debugGraphics.strokeRectShape(this.logo.getBounds());
+    this.debugGraphics.strokeCircle(this.logo.x + this.hitboxOffsetX, this.logo.y, this.hitboxRadius);
   }
 
   gameOver() {
