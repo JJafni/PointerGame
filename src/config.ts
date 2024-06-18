@@ -9,5 +9,12 @@ export default {
     height: window.innerHeight, // Set to the height of the window
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  physics: {
+    default: 'arcade',
+    arcade: {
+        gravity: { y: 300 }, // Global gravity
+        debug: false
+    }
   }
 };

@@ -36,6 +36,10 @@ export default class Demo extends Phaser.Scene {
     this.logo.setScale(0.07);
     this.logo.setSize(this.logo.displayWidth * 0.1, this.logo.displayHeight * 0.1);
     this.logo.setOrigin(0.01, 0.01);
+    this.physics.add.existing(this.logo);
+    this.logo.body.setGravityY(300); // Adjust gravity strength as needed
+    this.logo.body.setCollideWorldBounds(true); // Prevent it from going out of the game world
+
 
     // Initialize input keys
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -67,12 +71,8 @@ export default class Demo extends Phaser.Scene {
   }
 
   update() {
-    if (this.spacebar.isDown && this.logo.y > this.ceilingY) {
-        this.logo.y -= this.speed;
-        this.logo.angle = 0;  // Points to the right
-    } else if (this.logo.y < this.floorY) {
-        this.logo.y += this.speed;
-        this.logo.angle = 0;  // Points to the right and a bit downwards
+     if (this.spacebar.isDown) {
+        this.logo.body.setVelocityY(-160); // Move up against gravity
     }
     this.background.tilePositionX += 2; // Adjust this value to control the speed
 
