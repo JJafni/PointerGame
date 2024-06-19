@@ -12,6 +12,7 @@ export default class Demo extends Phaser.Scene {
   debugGraphics: Phaser.GameObjects.Graphics;
   hitboxRadius: number;
   hitboxOffsetX: number;
+  restartButton: Phaser.GameObjects.Text; // Define restartButton property
   constructor() {
     super('GameScene');
     this.speed = 5;
@@ -69,16 +70,17 @@ export default class Demo extends Phaser.Scene {
 
     // Create debug graphics for hitbox
     this.debugGraphics = this.add.graphics();
+
   }
 
   createObstacles() {
     for (let i = 0; i < 5; i++) {
-      let x = Phaser.Math.Between(800, 1000);
+      let x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300); // Spawn off-screen to the right
       let y = Phaser.Math.Between(this.ceilingY, this.floorY);
       let obstacle = this.add.image(x, y, 'obstacle');
-
+  
       obstacle.setScale(0.1); // Adjust the scale value as needed
-
+  
       obstacle.passed = false; // Custom property to check if passed
       this.obstacles.push(obstacle);
     }
@@ -104,8 +106,8 @@ export default class Demo extends Phaser.Scene {
 
     this.obstacles.forEach(obstacle => {
       obstacle.x -= this.obstacleSpeed;
-      if (obstacle.x < -50) {
-        obstacle.x = Phaser.Math.Between(800, 1000);
+      if (obstacle.x < -50) { // Once it moves past the left edge
+        obstacle.x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300); // Respawn off-screen to the right
         obstacle.y = Phaser.Math.Between(this.ceilingY, this.floorY);
         obstacle.passed = false; // Reset passed status
       } else if (!obstacle.passed && obstacle.x < this.logo.x) {
@@ -158,8 +160,8 @@ export default class Demo extends Phaser.Scene {
     // Stop background music
     this.backgroundMusic.stop();
 
-    // Create a restart button
-    const restartButton = this.add.text(
+    // Create restart button
+    this.restartButton = this.add.text(
       this.cameras.main.centerX,
       this.cameras.main.centerY + 70, // Position below the game over text
       'Restart',
@@ -170,12 +172,11 @@ export default class Demo extends Phaser.Scene {
         padding: { left: 10, right: 10, top: 5, bottom: 5 },
       }
     );
-    restartButton.setOrigin(0.5, 0.5);
-    restartButton.setInteractive({ useHandCursor: true }); // Makes the text clickable and changes the cursor to a pointer
+    this.restartButton.setOrigin(0.5, 0.5);
+    this.restartButton.setInteractive({ useHandCursor: true }); // Makes the text clickable and changes the cursor to a pointer
 
     // Add click event to restart the game
-    restartButton.on('pointerdown', () => {
-      this.scene.restart(); // This restarts the current scene
-    });
-  }
+    this.restartButton.on('pointerdown', () => {
+    this.scene.resume(); // This restarts the current scene
+    });  };
 }
