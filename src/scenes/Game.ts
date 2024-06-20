@@ -1,18 +1,31 @@
 import Phaser from 'phaser';
 
+// Define a custom interface that extends Phaser.GameObjects.Image
+interface CustomImage extends Phaser.GameObjects.Image {
+  passed: boolean;
+}
+
 export default class Demo extends Phaser.Scene {
   speed: number;
   obstacleSpeed: number;
   ceilingY: number;
   floorY: number;
-  obstacles: Phaser.GameObjects.Image[];
+  obstacles: CustomImage[];
   speedIncrement: number;
   score: number;
-  logo: Phaser.GameObjects.Image;
-  debugGraphics: Phaser.GameObjects.Graphics;
+  logo!: Phaser.GameObjects.Image;
+  debugGraphics!: Phaser.GameObjects.Graphics;
   hitboxRadius: number;
+  scoreText!: Phaser.GameObjects.Text;
+  cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  spacebar!: Phaser.Input.Keyboard.Key;
+  background!: Phaser.GameObjects.TileSprite;
   hitboxOffsetX: number;
-  restartButton: Phaser.GameObjects.Text; // Define restartButton property
+  startGame!: any; // Define startGame property
+  startButton!: Phaser.GameObjects.Text; // Define startButton property
+  backgroundMusic!: Phaser.Sound.BaseSound; // Define backgroundMusic property
+  restartButton!: Phaser.GameObjects.Text; // Define restartButton property
+
   constructor() {
     super('GameScene');
     this.speed = 5;
@@ -32,7 +45,10 @@ export default class Demo extends Phaser.Scene {
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
   }
+
   create() {
+    this.createStartMenu(); // Create the start menu
+
     // Add tile sprite for background
     this.background = this.add
       .tileSprite(0, 0, window.innerWidth, window.innerHeight, 'background')
@@ -48,8 +64,8 @@ export default class Demo extends Phaser.Scene {
     );
     this.logo.setOrigin(0.01, 0.01);
     this.physics.add.existing(this.logo);
-    this.logo.body.setGravityY(300); // Adjust gravity strength as needed
-    this.logo.body.setCollideWorldBounds(true); // Prevent it from going out of the game world
+    (this.logo.body as Phaser.Physics.Arcade.Body).setGravityY(300);
+    (this.logo.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
 
     // Initialize input keys
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -61,7 +77,6 @@ export default class Demo extends Phaser.Scene {
     // Create score text
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '32px',
-      fill: '#fff',
     });
 
     // Add background music
@@ -70,17 +85,38 @@ export default class Demo extends Phaser.Scene {
 
     // Create debug graphics for hitbox
     this.debugGraphics = this.add.graphics();
+  }
 
+  createStartMenu() {
+    // Create start game text
+    this.startButton = this.add.text(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      'Start Game',
+      {
+        fontSize: '32px',
+        color: '#00ff00',
+        backgroundColor: '#000000',
+        padding: { left: 10, right: 10, top: 5, bottom: 5 },
+      }
+    );
+    this.startButton.setOrigin(0.5, 0.5);
+    this.startButton.setInteractive({ useHandCursor: true });
+
+    // Add click event to start the game
+    this.startButton.on('pointerdown', () => {
+      this.startGame();
+    });
   }
 
   createObstacles() {
     for (let i = 0; i < 5; i++) {
       let x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300); // Spawn off-screen to the right
       let y = Phaser.Math.Between(this.ceilingY, this.floorY);
-      let obstacle = this.add.image(x, y, 'obstacle');
-  
+      let obstacle = this.add.image(x, y, 'obstacle') as CustomImage;
+
       obstacle.setScale(0.1); // Adjust the scale value as needed
-  
+
       obstacle.passed = false; // Custom property to check if passed
       this.obstacles.push(obstacle);
     }
@@ -88,7 +124,7 @@ export default class Demo extends Phaser.Scene {
 
   update() {
     if (this.spacebar.isDown) {
-      this.logo.body.setVelocityY(-200); // Move up against gravity
+      (this.logo.body as Phaser.Physics.Arcade.Body).setVelocityY(-200);
     }
 
     // Gradually rotate the logo based on its vertical velocity
@@ -177,6 +213,7 @@ export default class Demo extends Phaser.Scene {
 
     // Add click event to restart the game
     this.restartButton.on('pointerdown', () => {
-    this.scene.resume(); // This restarts the current scene
-    });  };
+      this.scene.resume(); // This restarts the current scene
+    });
+  }
 }
