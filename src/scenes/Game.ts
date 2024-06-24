@@ -22,7 +22,6 @@ export default class Demo extends Phaser.Scene {
   background!: Phaser.GameObjects.TileSprite;
   hitboxWidth: number;  // Define the hitbox width
   hitboxHeight: number; // Define the hitbox height
-  startGame!: any; // Define startGame property
   startButton!: Phaser.GameObjects.Text; // Define startButton property
   backgroundMusic!: Phaser.Sound.BaseSound; // Define backgroundMusic property
   restartButton!: Phaser.GameObjects.Text; // Define restartButton property
@@ -48,14 +47,13 @@ export default class Demo extends Phaser.Scene {
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
   }
-
   create() {
     // Add tile sprite for background
     this.background = this.add
       .tileSprite(0, 0, window.innerWidth, window.innerHeight, 'background')
       .setOrigin(0, 0)
       .setDisplaySize(window.innerWidth, window.innerHeight);
-
+  
     // Add logo image
     this.logo = this.add.image(200, 300, 'logo');
     this.logo.setScale(0.07);
@@ -67,25 +65,59 @@ export default class Demo extends Phaser.Scene {
     this.physics.add.existing(this.logo);
     (this.logo.body as Phaser.Physics.Arcade.Body).setGravityY(300);
     (this.logo.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
-
+  
     // Initialize input keys
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
-    // Create obstacles
-    this.createObstacles();
-
+  
     // Create score text
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '32px',
     });
-
+  
     // Add background music
     this.backgroundMusic = this.sound.add('backgroundMusic');
     this.backgroundMusic.play({ loop: true, volume: 0.1 }); // Play background music with looping and set volume
-
+  
     // Create debug graphics for hitbox
     this.debugGraphics = this.add.graphics();
+  
+    // Create start game button
+    this.startButton = this.add.text(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      'Start Game',
+      {
+        fontSize: '32px',
+        color: '#ffffff',
+        backgroundColor: '#0000ff',
+        padding: { left: 10, right: 10, top: 5, bottom: 5 }
+      }
+    );
+    this.startButton.setOrigin(0.5, 0.5);
+    this.startButton.setInteractive({ useHandCursor: true });
+  
+    // Add click event to start the game
+    this.startButton.on('pointerdown', () => {
+      this.startGame();
+    });
+  }
+  
+  startGame() {
+    // Hide the start button
+    this.startButton.setVisible(false);
+  
+    // Enable game elements
+    this.gameOverFlag = false;
+  
+    // Reset game state if needed
+    this.score = 0;
+    this.obstacleSpeed = 3;
+    this.scoreText.setText('Score: 0');
+    this.obstacles = [];
+  
+    // Create obstacles
+    this.createObstacles();
   }
 
   createObstacles() {
