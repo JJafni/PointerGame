@@ -15,7 +15,7 @@ export default class Demo extends Phaser.Scene {
   score: number;
   logo!: Phaser.GameObjects.Image;
   debugGraphics!: Phaser.GameObjects.Graphics;
-  hitboxRadius: number;
+  hitboxRadius!: number;
   scoreText!: Phaser.GameObjects.Text;
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   spacebar!: Phaser.Input.Keyboard.Key;
@@ -31,8 +31,8 @@ export default class Demo extends Phaser.Scene {
     super('GameScene');
     this.speed = 5;
     this.obstacleSpeed = 3;
-    this.ceilingY = 50;
-    this.floorY = 500;
+    this.ceilingY = 10; // Adjusted ceilingY value
+    this.floorY = window.innerHeight - 30; // Adjusted floorY value
     this.obstacles = [];
     this.score = 0; // Initialize score
     this.speedIncrement = 0.1; // Speed increment for each score
@@ -47,6 +47,7 @@ export default class Demo extends Phaser.Scene {
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
   }
+
   create() {
     // Add tile sprite for background
     this.background = this.add
@@ -170,7 +171,6 @@ export default class Demo extends Phaser.Scene {
     });
 
     this.checkCollisions();
-    this.updateDebugGraphics(); // Update debug graphics for hitbox
   }
 
   checkCollisions() {
@@ -185,28 +185,22 @@ export default class Demo extends Phaser.Scene {
       this.hitboxHeight
     );
 
+    // Check for collisions with obstacles
     this.obstacles.forEach(obstacle => {
       if (Phaser.Geom.Intersects.RectangleToRectangle(hitbox, obstacle.getBounds())) {
         this.gameOver();
       }
     });
+
+    // Check for collision with the floor or ceiling
+    if (this.logo.y - this.logo.displayHeight / 2 <= this.ceilingY || 
+        this.logo.y + this.logo.displayHeight / 2 >= this.floorY) {
+      this.gameOver();
+    }
   }
   
-  updateDebugGraphics() {
-    // Clear previous graphics
-    this.debugGraphics.clear();
-
-    // Draw hitbox
-    this.debugGraphics.lineStyle(2, 0xff0000);
-    this.debugGraphics.strokeRect(
-      this.logo.x - this.hitboxWidth / 2,
-      this.logo.y - this.hitboxHeight / 2,
-      this.hitboxWidth,
-      this.hitboxHeight
-
-    );
-  }
-
+  
+  
 
   gameOver() {
     this.gameOverFlag = true;
