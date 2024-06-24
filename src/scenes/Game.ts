@@ -20,11 +20,13 @@ export default class Demo extends Phaser.Scene {
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   spacebar!: Phaser.Input.Keyboard.Key;
   background!: Phaser.GameObjects.TileSprite;
-  hitboxOffsetX: number;
+  hitboxWidth: number;  // Define the hitbox width
+  hitboxHeight: number; // Define the hitbox height
   startGame!: any; // Define startGame property
   startButton!: Phaser.GameObjects.Text; // Define startButton property
   backgroundMusic!: Phaser.Sound.BaseSound; // Define backgroundMusic property
   restartButton!: Phaser.GameObjects.Text; // Define restartButton property
+  gameOverFlag: boolean | undefined;
 
   constructor() {
     super('GameScene');
@@ -35,8 +37,9 @@ export default class Demo extends Phaser.Scene {
     this.obstacles = [];
     this.score = 0; // Initialize score
     this.speedIncrement = 0.1; // Speed increment for each score
-    this.hitboxRadius = 20; // Adjust hitbox radius
-    this.hitboxOffsetX = 30; // Adjust hitbox horizontal offset
+    this.hitboxWidth = 50;  // Set the width of the hitbox
+    this.hitboxHeight = 30; // Set the height of the hitbox
+    this.gameOverFlag = false;
   }
 
   preload() {
@@ -47,8 +50,6 @@ export default class Demo extends Phaser.Scene {
   }
 
   create() {
-    this.createStartMenu(); // Create the start menu
-
     // Add tile sprite for background
     this.background = this.add
       .tileSprite(0, 0, window.innerWidth, window.innerHeight, 'background')
@@ -87,28 +88,6 @@ export default class Demo extends Phaser.Scene {
     this.debugGraphics = this.add.graphics();
   }
 
-  createStartMenu() {
-    // Create start game text
-    this.startButton = this.add.text(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      'Start Game',
-      {
-        fontSize: '32px',
-        color: '#00ff00',
-        backgroundColor: '#000000',
-        padding: { left: 10, right: 10, top: 5, bottom: 5 },
-      }
-    );
-    this.startButton.setOrigin(0.5, 0.5);
-    this.startButton.setInteractive({ useHandCursor: true });
-
-    // Add click event to start the game
-    this.startButton.on('pointerdown', () => {
-      this.startGame();
-    });
-  }
-
   createObstacles() {
     for (let i = 0; i < 5; i++) {
       let x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300); // Spawn off-screen to the right
@@ -123,6 +102,10 @@ export default class Demo extends Phaser.Scene {
   }
 
   update() {
+    if (this.gameOverFlag) {
+      return;
+    }
+
     if (this.spacebar.isDown) {
       (this.logo.body as Phaser.Physics.Arcade.Body).setVelocityY(-200);
     }
@@ -159,29 +142,42 @@ export default class Demo extends Phaser.Scene {
   }
 
   checkCollisions() {
+    // Calculate hitbox position centered on the logo
+    const hitboxX = this.logo.x - this.hitboxWidth / 2;
+    const hitboxY = this.logo.y - this.hitboxHeight / 2;
+
+    const hitbox = new Phaser.Geom.Rectangle(
+      hitboxX,
+      hitboxY,
+      this.hitboxWidth,
+      this.hitboxHeight
+    );
+
     this.obstacles.forEach(obstacle => {
-      if (
-        Phaser.Geom.Intersects.CircleToRectangle(
-          new Phaser.Geom.Circle(this.logo.x + this.hitboxOffsetX, this.logo.y, this.hitboxRadius),
-          obstacle.getBounds()
-        )
-      ) {
+      if (Phaser.Geom.Intersects.RectangleToRectangle(hitbox, obstacle.getBounds())) {
         this.gameOver();
       }
     });
   }
-
+  
   updateDebugGraphics() {
     // Clear previous graphics
     this.debugGraphics.clear();
 
     // Draw hitbox
     this.debugGraphics.lineStyle(2, 0xff0000);
-    this.debugGraphics.strokeCircle(this.logo.x + this.hitboxOffsetX, this.logo.y, this.hitboxRadius);
+    this.debugGraphics.strokeRect(
+      this.logo.x - this.hitboxWidth / 2,
+      this.logo.y - this.hitboxHeight / 2,
+      this.hitboxWidth,
+      this.hitboxHeight
+
+    );
   }
 
+
   gameOver() {
-    this.scene.pause();
+    this.gameOverFlag = true;
     const gameOverText = this.add.text(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
@@ -192,10 +188,10 @@ export default class Demo extends Phaser.Scene {
       }
     );
     gameOverText.setOrigin(0.5, 0.5);
-
+  
     // Stop background music
     this.backgroundMusic.stop();
-
+  
     // Create restart button
     this.restartButton = this.add.text(
       this.cameras.main.centerX,
@@ -210,10 +206,28 @@ export default class Demo extends Phaser.Scene {
     );
     this.restartButton.setOrigin(0.5, 0.5);
     this.restartButton.setInteractive({ useHandCursor: true }); // Makes the text clickable and changes the cursor to a pointer
-
+  
     // Add click event to restart the game
     this.restartButton.on('pointerdown', () => {
-      this.scene.resume(); // This restarts the current scene
+      // Reset the logo's position and velocity
+      this.logo.x = 200;
+      this.logo.y = 300;
+      (this.logo.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
+      (this.logo.body as Phaser.Physics.Arcade.Body).setGravityY(300);
+  
+      // Reset game state
+      this.score = 0;
+      this.obstacleSpeed = 3;
+      this.gameOverFlag = false;
+      this.scoreText.setText('Score: 0');
+      this.obstacles.forEach(obstacle => {
+        obstacle.x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300);
+        obstacle.y = Phaser.Math.Between(this.ceilingY, this.floorY);
+        obstacle.passed = false;
+      });
+  
+      // Restart the scene
+      this.scene.restart();
     });
   }
 }
