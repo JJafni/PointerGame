@@ -26,6 +26,8 @@ export default class Demo extends Phaser.Scene {
   backgroundMusic!: Phaser.Sound.BaseSound; // Define backgroundMusic property
   restartButton!: Phaser.GameObjects.Text; // Define restartButton property
   gameOverFlag: boolean | undefined;
+  gameStarted: boolean; // Flag to track if the game has started
+
 
   constructor() {
     super('GameScene');
@@ -39,6 +41,8 @@ export default class Demo extends Phaser.Scene {
     this.hitboxWidth = 50;  // Set the width of the hitbox
     this.hitboxHeight = 30; // Set the height of the hitbox
     this.gameOverFlag = false;
+    this.gameStarted = false; // Initialize gameStarted flag
+
   }
 
   preload() {
@@ -138,10 +142,16 @@ export default class Demo extends Phaser.Scene {
     if (this.gameOverFlag) {
       return;
     }
-
-    if (this.spacebar.isDown) {
+    if (!this.gameStarted) {
+      // If game hasn't started, disable logo control
+      // Optionally, you can add code here to disable or handle the logo control behavior.
+    }
+    
+    if (this.gameStarted && this.spacebar.isDown) {
+      // Check if game has started and spacebar is pressed
       (this.logo.body as Phaser.Physics.Arcade.Body).setVelocityY(-200);
     }
+    
 
     // Gradually rotate the logo based on its vertical velocity
     let targetAngle = 0;
@@ -193,8 +203,7 @@ export default class Demo extends Phaser.Scene {
     });
 
     // Check for collision with the floor or ceiling
-    if (this.logo.y - this.logo.displayHeight / 2 <= this.ceilingY || 
-        this.logo.y + this.logo.displayHeight / 2 >= this.floorY) {
+    if (this.logo.y - this.logo.displayHeight / 2 <= this.ceilingY) {
       this.gameOver();
     }
   }
