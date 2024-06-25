@@ -51,6 +51,7 @@ export default class Demo extends Phaser.Scene {
     this.load.image('obstacle', 'assets/obstacle.png');
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
+    this.load.audio('collisionSound', 'assets/trigger.mp3'); // Preload the collision sound effect
     this.load.image('cornerLogo', 'assets/logo.png'); // Preload the corner logo image
   }
 
@@ -199,6 +200,12 @@ export default class Demo extends Phaser.Scene {
       this.hitboxWidth,
       this.hitboxHeight
     );
+    this.obstacles.forEach(obstacle => {
+      if (Phaser.Geom.Intersects.RectangleToRectangle(hitbox, obstacle.getBounds())) {
+        this.gameOver();
+        this.sound.play('collisionSound'); // Play collision sound effect
+      }
+    });
 
     // Check for collisions with obstacles
     this.obstacles.forEach(obstacle => {
