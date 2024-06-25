@@ -213,6 +213,7 @@ export default class Demo extends Phaser.Scene {
         this.gameOver();
       }
     });
+    
   }
 
   gameOver() {
