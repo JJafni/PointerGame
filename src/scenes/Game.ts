@@ -27,13 +27,16 @@ export default class Demo extends Phaser.Scene {
   restartButton!: Phaser.GameObjects.Text; // Define restartButton property
   gameOverFlag: boolean | undefined;
   gameStarted: boolean; // Flag to track if the game has started
-
+  doublePointsItems: Phaser.GameObjects.Image[]; // Array for double points items
+  doublePointsActive: boolean; // Flag to track double points status
+  doublePointsDuration: number; // Duration for double points effect
+  doublePointsTimer!: Phaser.Time.TimerEvent; // Timer for double points effect
 
   constructor() {
     super('GameScene');
     this.speed = 5;
     this.obstacleSpeed = 3;
-    this.ceilingY = 10; // Adjusted ceilingY value
+    this.ceilingY = 50; // Adjusted ceilingY value
     this.floorY = window.innerHeight - 30; // Adjusted floorY value
     this.obstacles = [];
     this.score = 0; // Initialize score
@@ -42,12 +45,15 @@ export default class Demo extends Phaser.Scene {
     this.hitboxHeight = 30; // Set the height of the hitbox
     this.gameOverFlag = false;
     this.gameStarted = false; // Initialize gameStarted flag
-
+    this.doublePointsItems = []; // Initialize double points items array
+    this.doublePointsActive = false; // Initialize double points status
+    this.doublePointsDuration = 5000; // Duration for double points effect (5 seconds)
   }
 
   preload() {
     this.load.image('logo', 'assets/plane.png');
     this.load.image('obstacle', 'assets/obstacle.png');
+    this.load.image('doublePoints', 'assets/chute.png'); // Preload double points item image
     this.load.audio('backgroundMusic', 'assets/8bit.mp3'); // Preload background music
     this.load.image('background', 'assets/background.jpg');
   }
@@ -58,7 +64,7 @@ export default class Demo extends Phaser.Scene {
       .tileSprite(0, 0, window.innerWidth, window.innerHeight, 'background')
       .setOrigin(0, 0)
       .setDisplaySize(window.innerWidth, window.innerHeight);
-  
+
     // Add logo image
     this.logo = this.add.image(200, 300, 'logo');
     this.logo.setScale(0.07);
@@ -70,23 +76,23 @@ export default class Demo extends Phaser.Scene {
     this.physics.add.existing(this.logo);
     (this.logo.body as Phaser.Physics.Arcade.Body).setGravityY(300);
     (this.logo.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
-  
+
     // Initialize input keys
     this.cursors = this.input.keyboard.createCursorKeys();
     this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-  
+
     // Create score text
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '32px',
     });
-  
+
     // Add background music
     this.backgroundMusic = this.sound.add('backgroundMusic');
     this.backgroundMusic.play({ loop: true, volume: 0.1 }); // Play background music with looping and set volume
-  
+
     // Create debug graphics for hitbox
     this.debugGraphics = this.add.graphics();
-  
+
     // Create start game button
     this.startButton = this.add.text(
       this.cameras.main.centerX,
@@ -101,26 +107,26 @@ export default class Demo extends Phaser.Scene {
     );
     this.startButton.setOrigin(0.5, 0.5);
     this.startButton.setInteractive({ useHandCursor: true });
-  
+
     // Add click event to start the game
     this.startButton.on('pointerdown', () => {
       this.startGame();
     });
   }
-  
+
   startGame() {
     // Hide the start button
     this.startButton.setVisible(false);
-  
+
     // Enable game elements
     this.gameOverFlag = false;
-  
+
     // Reset game state if needed
     this.score = 0;
     this.obstacleSpeed = 3;
     this.scoreText.setText('Score: 0');
     this.obstacles = [];
-  
+
     // Create obstacles
     this.createObstacles();
   }
@@ -128,7 +134,7 @@ export default class Demo extends Phaser.Scene {
   createObstacles() {
     for (let i = 0; i < 5; i++) {
       let x = Phaser.Math.Between(window.innerWidth + 100, window.innerWidth + 300); // Spawn off-screen to the right
-      let y = Phaser.Math.Between(this.ceilingY, this.floorY);
+      let y = Phaser.Math.Between(this.ceilingY, this.floorY); // Randomize between ceiling and floor
       let obstacle = this.add.image(x, y, 'obstacle') as CustomImage;
 
       obstacle.setScale(0.1); // Adjust the scale value as needed
@@ -138,20 +144,26 @@ export default class Demo extends Phaser.Scene {
     }
   }
 
+  spawnDoublePointsItem() {
+    let x = Phaser.Math.Between(0, window.innerWidth); // Randomize x position
+    let y = Phaser.Math.Between(this.ceilingY, this.floorY); // Randomize y position
+    let item = this.add.image(x, y, 'doublePoints');
+    item.setScale(0.1); // Adjust the scale value as needed
+
+    this.doublePointsItems.push(item);
+  }
+
   update() {
     if (this.gameOverFlag) {
       return;
     }
     if (!this.gameStarted) {
       // If game hasn't started, disable logo control
-      // Optionally, you can add code here to disable or handle the logo control behavior.
     }
-    
-    if (this.gameStarted && this.spacebar.isDown) {
-      // Check if game has started and spacebar is pressed
+
+    if (this.spacebar.isDown) {
       (this.logo.body as Phaser.Physics.Arcade.Body).setVelocityY(-200);
     }
-    
 
     // Gradually rotate the logo based on its vertical velocity
     let targetAngle = 0;
@@ -174,9 +186,22 @@ export default class Demo extends Phaser.Scene {
         obstacle.passed = false; // Reset passed status
       } else if (!obstacle.passed && obstacle.x < this.logo.x) {
         obstacle.passed = true;
-        this.score++; // Increment score
+        this.score += this.doublePointsActive ? 2 : 1; // Double points if active
         this.obstacleSpeed += this.speedIncrement; // Increase obstacle speed
         this.scoreText.setText('Score: ' + this.score); // Update score text
+
+        if (this.score % 5 === 0) { // Spawn a double points item every 5 points
+          this.spawnDoublePointsItem();
+        }
+      }
+    });
+
+    // Update double points items
+    this.doublePointsItems.forEach(item => {
+      item.x -= this.obstacleSpeed; // Move the double points item to the left
+      if (item.x < -50) { // If it goes off the left of the screen
+        item.destroy();
+        this.doublePointsItems = this.doublePointsItems.filter(i => i !== item);
       }
     });
 
@@ -202,14 +227,29 @@ export default class Demo extends Phaser.Scene {
       }
     });
 
-    // Check for collision with the floor or ceiling
-    if (this.logo.y - this.logo.displayHeight / 2 <= this.ceilingY) {
-      this.gameOver();
-    }
+    // Check for collisions with double points items
+    this.doublePointsItems.forEach(item => {
+      if (Phaser.Geom.Intersects.RectangleToRectangle(hitbox, item.getBounds())) {
+        this.activateDoublePoints();
+        item.destroy();
+        this.doublePointsItems = this.doublePointsItems.filter(i => i !== item);
+      }
+    });
   }
-  
-  
-  
+
+  activateDoublePoints() {
+    this.doublePointsActive = true;
+    if (this.doublePointsTimer) {
+      this.doublePointsTimer.remove();
+    }
+    this.doublePointsTimer = this.time.addEvent({
+      delay: this.doublePointsDuration,
+      callback: () => {
+        this.doublePointsActive = false;
+      },
+      callbackScope: this,
+    });
+  }
 
   gameOver() {
     this.gameOverFlag = true;
@@ -223,10 +263,10 @@ export default class Demo extends Phaser.Scene {
       }
     );
     gameOverText.setOrigin(0.5, 0.5);
-  
+
     // Stop background music
     this.backgroundMusic.stop();
-  
+
     // Create restart button
     this.restartButton = this.add.text(
       this.cameras.main.centerX,
@@ -241,7 +281,7 @@ export default class Demo extends Phaser.Scene {
     );
     this.restartButton.setOrigin(0.5, 0.5);
     this.restartButton.setInteractive({ useHandCursor: true }); // Makes the text clickable and changes the cursor to a pointer
-  
+
     // Add click event to restart the game
     this.restartButton.on('pointerdown', () => {
       // Reset the logo's position and velocity
@@ -249,7 +289,7 @@ export default class Demo extends Phaser.Scene {
       this.logo.y = 300;
       (this.logo.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
       (this.logo.body as Phaser.Physics.Arcade.Body).setGravityY(300);
-  
+
       // Reset game state
       this.score = 0;
       this.obstacleSpeed = 3;
@@ -260,7 +300,7 @@ export default class Demo extends Phaser.Scene {
         obstacle.y = Phaser.Math.Between(this.ceilingY, this.floorY);
         obstacle.passed = false;
       });
-  
+
       // Restart the scene
       this.scene.restart();
     });
